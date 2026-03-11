@@ -1,0 +1,222 @@
+:root {
+  --bg: #0F0F0F;
+  --card: #1A1A1A;
+  --accent: #FF5C47;
+  --accent-glow: rgba(255,92,71,0.2);
+  --text: #F5F2ED;
+  --text-muted: #888;
+  --border: #2A2A2A;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  padding: 32px 20px 48px;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+
+.badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 3px 10px;
+  text-transform: uppercase;
+}
+
+.timestamp {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+}
+
+/* 警告バナー */
+.warning-banner {
+  background: var(--accent);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 0 32px var(--accent-glow);
+}
+
+.warning-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.warning-text h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+}
+
+.warning-text p {
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  margin-top: 3px;
+}
+
+/* 名前カード */
+.name-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.name-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--accent-glow);
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.name-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.name-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* アレルゲンカード */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.allergen-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.allergen-card {
+  background: var(--card);
+  border: 1px solid #2E1512;
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: fadeIn 0.3s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.allergen-emoji {
+  font-size: 26px;
+  width: 36px;
+  text-align: center;
+}
+
+.allergen-name {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.allergen-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* その他 */
+.other-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.other-text {
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* フッター */
+.footer {
+  margin-top: auto;
+  text-align: center;
+  padding-top: 32px;
+}
+
+.footer-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.footer-brand {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  margin-top: 12px;
+  letter-spacing: 0.1em;
+}
+
+/* エラー */
+.error-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.error-state h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.error-state p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
