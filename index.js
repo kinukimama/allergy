@@ -45,7 +45,7 @@ function saveActiveId(id) {
 
 function loadSettings() {
   const raw = localStorage.getItem(STORAGE_KEY_SETTINGS);
-  if (!raw) return { neverExpire: false, defaultTimer: 15 };
+  if (!raw) return { defaultTimer: 15, destination: 'restaurant' };
   return JSON.parse(raw);
 }
 
@@ -61,10 +61,11 @@ function createProfile(name) {
 // 状態
 // ==========================================
 
-let profiles     = [];
-let activeId     = null;
-let settings     = {};
+let profiles      = [];
+let activeId      = null;
+let settings      = {};
 let selectedTimer = 15;
+let destination   = 'restaurant'; // 'restaurant' | 'friend'
 
 // ==========================================
 // 初期化
@@ -74,20 +75,19 @@ window.addEventListener('DOMContentLoaded', () => {
   profiles      = loadProfiles();
   activeId      = loadActiveId(profiles);
   settings      = loadSettings();
-  selectedTimer = settings.defaultTimer || 15;
+  selectedTimer = settings.defaultTimer  || 15;
+  destination   = settings.destination   || 'restaurant';
 
-  // チェックボックス変更時に自動保存
   document.querySelectorAll('.allergens-grid input[type="checkbox"]').forEach(cb => {
     cb.addEventListener('change', saveCurrentProfile);
   });
 
-  // テキストエリア変更時に自動保存
   document.getElementById('other-input').addEventListener('input', saveCurrentProfile);
 
   renderTabs();
   renderProfile();
   renderTimerSelector();
-  renderSettings();
+  renderDestination();
 });
 
 // ==========================================
@@ -109,7 +109,6 @@ function renderTabs() {
     tab.appendChild(nameSpan);
 
     if (p.id === activeId) {
-      // アクティブタブ：編集ボタンを表示
       const editBtn = document.createElement('button');
       editBtn.className = 'tab-edit';
       editBtn.textContent = '✏';
@@ -117,7 +116,6 @@ function renderTabs() {
       editBtn.addEventListener('click', e => { e.stopPropagation(); startRename(p.id); });
       tab.appendChild(editBtn);
 
-      // 複数プロフィールがある場合のみ削除ボタンを表示
       if (profiles.length > 1) {
         const delBtn = document.createElement('button');
         delBtn.className = 'tab-delete';
@@ -127,14 +125,12 @@ function renderTabs() {
         tab.appendChild(delBtn);
       }
     } else {
-      // 非アクティブタブ：クリックで切り替え
       tab.addEventListener('click', () => switchProfile(p.id));
     }
 
     container.appendChild(tab);
   });
 
-  // プロフィール追加ボタン
   const addBtn = document.createElement('button');
   addBtn.className = 'tab-add';
   addBtn.textContent = '＋';
@@ -160,7 +156,6 @@ function addProfile() {
   saveActiveId(activeId);
   renderTabs();
   renderProfile();
-  // 追加直後にリネーム開始
   setTimeout(() => startRename(newProfile.id), 50);
 }
 
@@ -199,8 +194,8 @@ function startRename(id) {
   const finish = () => {
     if (done) return;
     done = true;
-    const newName  = input.value.trim() || profile.name;
-    profile.name   = newName;
+    const newName = input.value.trim() || profile.name;
+    profile.name  = newName;
     saveProfiles(profiles);
     renderTabs();
   };
@@ -246,11 +241,31 @@ function saveCurrentProfile() {
 
 function resetCurrentProfile() {
   if (!confirm('現在のプロフィールの選択内容をリセットしますか？')) return;
-  const profile    = getActiveProfile();
+  const profile     = getActiveProfile();
   profile.allergens = [];
   profile.other     = '';
   saveProfiles(profiles);
   renderProfile();
+}
+
+// ==========================================
+// 用途選択
+// ==========================================
+
+function selectDestination(dest) {
+  destination          = dest;
+  settings.destination = dest;
+  saveSettings(settings);
+  renderDestination();
+}
+
+function renderDestination() {
+  document.getElementById('dest-restaurant').classList.toggle('active', destination === 'restaurant');
+  document.getElementById('dest-friend').classList.toggle('active', destination === 'friend');
+
+  // 飲食店用のときだけタイマー選択を表示
+  const timerSection = document.getElementById('timer-section');
+  timerSection.classList.toggle('hidden', destination === 'friend');
 }
 
 // ==========================================
@@ -264,38 +279,10 @@ function renderTimerSelector() {
 }
 
 function selectTimer(minutes) {
-  selectedTimer        = minutes;
+  selectedTimer         = minutes;
   settings.defaultTimer = minutes;
   saveSettings(settings);
   renderTimerSelector();
-}
-
-// ==========================================
-// 高度な設定
-// ==========================================
-
-function renderSettings() {
-  document.getElementById('never-expire-toggle').checked = settings.neverExpire || false;
-  updateTimerSectionState();
-}
-
-function toggleNeverExpire() {
-  settings.neverExpire = document.getElementById('never-expire-toggle').checked;
-  saveSettings(settings);
-  updateTimerSectionState();
-}
-
-function updateTimerSectionState() {
-  const section = document.getElementById('timer-section');
-  section.style.opacity       = settings.neverExpire ? '0.4' : '1';
-  section.style.pointerEvents = settings.neverExpire ? 'none' : 'auto';
-}
-
-function toggleAdvancedSettings() {
-  const panel = document.getElementById('advanced-panel');
-  const arrow = document.getElementById('advanced-arrow');
-  const isOpen = panel.classList.toggle('open');
-  arrow.textContent = isOpen ? '▲' : '▼';
 }
 
 // ==========================================
@@ -312,14 +299,13 @@ function generateQR() {
   }
   document.getElementById('no-sel-msg').style.display = 'none';
 
-  // URLパラメータを構築
   const params = new URLSearchParams();
-  params.set('sid',  generateId());          // スキャンID（重複防止）
+  params.set('sid',  generateId());
   params.set('name', profile.name);
   if (profile.allergens.length) params.set('data',  profile.allergens.join(','));
   if (profile.other)            params.set('other', encodeURIComponent(profile.other));
 
-  if (settings.neverExpire) {
+  if (destination === 'friend') {
     params.set('expires', 'never');
   } else {
     params.set('expires', (Date.now() + selectedTimer * 60 * 1000).toString());
@@ -327,7 +313,6 @@ function generateQR() {
 
   const url = `${BASE_URL}?${params.toString()}`;
 
-  // QR生成
   const container = document.getElementById('qr-container');
   container.innerHTML = '';
   new QRCode(container, {
@@ -362,9 +347,8 @@ function generateQR() {
     tagsEl.appendChild(t);
   }
 
-  // タイマー表示
-  document.getElementById('modal-timer').textContent = settings.neverExpire
-    ? '⚙ 消去なし（高度な設定）'
+  document.getElementById('modal-timer').textContent = destination === 'friend'
+    ? '👥 消去なし（知人・幹事用）'
     : `⏱ ${selectedTimer}分後に自動消去`;
 
   document.getElementById('modal').classList.add('open');
@@ -375,3 +359,5 @@ function closeModal(e) {
     document.getElementById('modal').classList.remove('open');
   }
 }
+
+

@@ -68,31 +68,32 @@
     <textarea id="other-input" rows="3" placeholder="例：大豆アレルギーあり。ごま油はOK。"></textarea>
   </div>
 
-  <!-- タイマー選択 -->
-  <div class="card" id="timer-section">
-    <div class="section-title">店員側の表示時間</div>
-    <div class="timer-options">
-      <button class="timer-option" data-minutes="10" onclick="selectTimer(10)">10分</button>
-      <button class="timer-option" data-minutes="15" onclick="selectTimer(15)">15分</button>
-      <button class="timer-option" data-minutes="20" onclick="selectTimer(20)">20分</button>
-    </div>
-  </div>
-
-  <!-- 高度な設定 -->
-  <div class="advanced-wrapper">
-    <button class="advanced-toggle" onclick="toggleAdvancedSettings()">
-      高度な設定 <span id="advanced-arrow">▼</span>
-    </button>
-    <div id="advanced-panel" class="advanced-panel">
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <div class="toggle-label-text">消去しない（永続表示）</div>
-          <div class="toggle-desc">店員側の画面に情報が残り続けます</div>
+  <!-- 用途選択 -->
+  <div class="card">
+    <div class="section-title">送り先</div>
+    <div class="destination-options">
+      <div class="destination-option active" id="dest-restaurant" onclick="selectDestination('restaurant')">
+        <div class="dest-icon">🍽</div>
+        <div class="dest-info">
+          <div class="dest-label">飲食店・店員</div>
+          <div class="dest-desc">一定時間後に自動消去</div>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="never-expire-toggle" onchange="toggleNeverExpire()">
-          <span class="toggle-slider"></span>
-        </label>
+      </div>
+      <div class="destination-option" id="dest-friend" onclick="selectDestination('friend')">
+        <div class="dest-icon">👥</div>
+        <div class="dest-info">
+          <div class="dest-label">知人・幹事</div>
+          <div class="dest-desc">消去しない</div>
+        </div>
+      </div>
+    </div>
+    <!-- タイマー選択（飲食店用のみ表示） -->
+    <div id="timer-section">
+      <div class="timer-label">表示時間</div>
+      <div class="timer-options">
+        <button class="timer-option" data-minutes="10" onclick="selectTimer(10)">10分</button>
+        <button class="timer-option" data-minutes="15" onclick="selectTimer(15)">15分</button>
+        <button class="timer-option" data-minutes="20" onclick="selectTimer(20)">20分</button>
       </div>
     </div>
   </div>
