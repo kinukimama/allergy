@@ -1,3 +1,9 @@
+// ==========================================
+// 定数
+// ==========================================
+
+const STORAGE_KEY_SCANS = 'allergyScans';
+
 const ALLERGEN_META = {
   '卵':    { icon: '🥚', desc: 'Egg' },
   '乳':    { icon: '🥛', desc: 'Dairy / Milk' },
@@ -9,79 +15,216 @@ const ALLERGEN_META = {
   'くるみ': { icon: '🌰', desc: 'Walnut' },
 };
 
-// タイムスタンプ
-const now = new Date();
-document.getElementById('timestamp').textContent =
-  `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-// URLパラメータからデータ取得
-const params = new URLSearchParams(location.search);
-const name    = params.get('name') || '';
-const dataRaw = params.get('data') || '';
-const other   = params.get('other') ? decodeURIComponent(params.get('other')) : '';
-
-const allergens = dataRaw ? dataRaw.split(',').filter(Boolean) : [];
-const content   = document.getElementById('content');
+// ==========================================
+// ユーティリティ
+// ==========================================
 
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-if (!allergens.length && !other) {
-  content.innerHTML = `
-    <div class="error-state">
-      <h2>情報がありません</h2>
-      <p>QRコードが正しく読み取れなかったか、<br>情報が登録されていません。</p>
-    </div>`;
-} else {
-  let html = '';
+// ==========================================
+// スキャンデータ管理
+// ==========================================
 
-  // 警告バナー
-  html += `
+function loadScans() {
+  const raw = localStorage.getItem(STORAGE_KEY_SCANS);
+  if (!raw) return [];
+  return JSON.parse(raw);
+}
+
+function saveScans(list) {
+  localStorage.setItem(STORAGE_KEY_SCANS, JSON.stringify(list));
+}
+
+// ==========================================
+// URLパラメータからスキャンデータを取得・保存
+// ==========================================
+
+const params    = new URLSearchParams(location.search);
+const scanId    = params.get('sid')   || '';
+const name      = params.get('name')  || '';
+const dataRaw   = params.get('data')  || '';
+const other     = params.get('other') ? decodeURIComponent(params.get('other')) : '';
+const expiresParam = params.get('expires') || '';
+
+const allergens = dataRaw ? dataRaw.split(',').filter(Boolean) : [];
+
+// URLにスキャンデータがある場合のみ保存処理を行う
+if (scanId && (allergens.length || other)) {
+  let scans = loadScans();
+
+  // 同じsidは重複して追加しない（リロード対策）
+  const alreadyExists = scans.find(s => s.id === scanId);
+
+  if (!alreadyExists) {
+    // 同じ名前の古いデータは上書き
+    scans = scans.filter(s => s.name !== name);
+
+    const expiresAt = expiresParam === 'never'
+      ? null
+      : (parseInt(expiresParam) || Date.now() + 15 * 60 * 1000);
+
+    scans.push({
+      id:        scanId,
+      name,
+      allergens,
+      other,
+      expiresAt,
+      scannedAt: Date.now()
+    });
+
+    saveScans(scans);
+  }
+}
+
+// ==========================================
+// タイムスタンプ表示
+// ==========================================
+
+const now = new Date();
+document.getElementById('timestamp').textContent =
+  `${now.getMonth() + 1}/${now.getDate()} ` +
+  `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+// ==========================================
+// 画面描画
+// ==========================================
+
+function render() {
+  let scans  = loadScans();
+  const nowMs = Date.now();
+
+  // 期限切れを削除
+  const filtered = scans.filter(s => s.expiresAt === null || s.expiresAt > nowMs);
+  if (filtered.length !== scans.length) {
+    saveScans(filtered);
+    scans = filtered;
+  }
+
+  const content = document.getElementById('content');
+
+  if (!scans.length) {
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">✓</div>
+        <h2>アクティブなアレルギー情報はありません</h2>
+        <p>QRコードをスキャンすると<br>ここに情報が表示されます</p>
+      </div>`;
+    return;
+  }
+
+  let html = `
     <div class="warning-banner">
       <div class="warning-icon">⚠️</div>
       <div class="warning-text">
-        <h2>アレルギーをお持ちのお客様です</h2>
-        <p>以下の食材・成分に注意してご対応ください</p>
+        <h2>アレルギーをお持ちのお客様がいます</h2>
+        <p>${scans.length}名分の情報が登録されています</p>
       </div>
     </div>`;
 
-  // 名前
-  if (name) {
+  scans.forEach(scan => {
+    const remaining = scan.expiresAt ? scan.expiresAt - nowMs : null;
+    const timerHtml = formatTimer(scan.id, remaining);
+
     html += `
-      <div class="name-card">
-        <div class="name-icon">👤</div>
-        <div>
-          <div class="name-label">お名前</div>
-          <div class="name-value">${escHtml(name)} 様</div>
+      <div class="person-card" id="card-${scan.id}">
+        <div class="person-header">
+          <div class="person-name">👤 ${escHtml(scan.name)} 様</div>
+          ${timerHtml}
         </div>
-      </div>`;
-  }
+        <div class="allergen-list">`;
 
-  // アレルゲン
-  if (allergens.length) {
-    html += `<div class="section-label">アレルゲン（${allergens.length}品目）</div>`;
-    html += `<div class="allergen-list">`;
-    allergens.forEach((a, i) => {
+    scan.allergens.forEach(a => {
       const meta = ALLERGEN_META[a] || { icon: '⚠️', desc: 'Allergen' };
-      // animation-delayはJS動的生成のためインライン記述
       html += `
-        <div class="allergen-card" style="animation-delay:${i * 0.07}s">
-          <div class="allergen-emoji">${meta.icon}</div>
-          <div>
-            <div class="allergen-name">${escHtml(a)}</div>
-            <div class="allergen-desc">${meta.desc}</div>
-          </div>
-        </div>`;
+          <div class="allergen-row">
+            <span class="allergen-emoji">${meta.icon}</span>
+            <span class="allergen-name">${escHtml(a)}</span>
+            <span class="allergen-desc">${meta.desc}</span>
+          </div>`;
     });
-    html += `</div>`;
-  }
 
-  // その他
-  if (other) {
-    html += `<div class="section-label">その他・備考</div>`;
-    html += `<div class="other-card"><p class="other-text">${escHtml(other)}</p></div>`;
-  }
+    html += `</div>`;
+
+    if (scan.other) {
+      html += `<div class="other-note">${escHtml(scan.other)}</div>`;
+    }
+
+    html += `</div>`;
+  });
 
   content.innerHTML = html;
 }
+
+function formatTimer(id, remaining) {
+  if (remaining === null) {
+    return `<div class="person-timer never" id="timer-${id}">∞</div>`;
+  }
+  const minutes = Math.floor(remaining / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+  const urgent  = remaining < 60000 ? ' urgent' : '';
+  return `<div class="person-timer${urgent}" id="timer-${id}">${minutes}:${String(seconds).padStart(2, '0')}</div>`;
+}
+
+// ==========================================
+// タイマー更新（1秒ごと・DOM再描画なし）
+// ==========================================
+
+function updateTimers() {
+  const scans  = loadScans();
+  const nowMs   = Date.now();
+  let needsRender = false;
+
+  scans.forEach(scan => {
+    if (scan.expiresAt === null) return;
+
+    const remaining = scan.expiresAt - nowMs;
+
+    if (remaining <= 0) {
+      needsRender = true;
+      return;
+    }
+
+    const timerEl = document.getElementById(`timer-${scan.id}`);
+    if (!timerEl) return;
+
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+    timerEl.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+    if (remaining < 60000) timerEl.classList.add('urgent');
+  });
+
+  // 期限切れが発生した場合は再描画
+  if (needsRender) render();
+}
+
+// ==========================================
+// 全消去
+// ==========================================
+
+function clearAll() {
+  if (!confirm('表示中のアレルギー情報をすべて消去しますか？')) return;
+  saveScans([]);
+  render();
+}
+
+// ==========================================
+// 別タブからのスキャン検知（localStorage変更イベント）
+// ==========================================
+
+window.addEventListener('storage', e => {
+  if (e.key === STORAGE_KEY_SCANS) render();
+});
+
+// ==========================================
+// 起動
+// ==========================================
+
+render();
+setInterval(updateTimers, 1000);

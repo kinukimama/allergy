@@ -18,10 +18,9 @@
     <p class="subtitle">QRコードを店員に見せるだけで、<br>あなたのアレルギー情報が伝わります。</p>
   </header>
 
-  <!-- 名前 -->
-  <div class="card">
-    <div class="section-title">お名前（任意）</div>
-    <input class="name-input" type="text" id="name-input" placeholder="例：田中 花子" maxlength="30" />
+  <!-- プロフィールタブ -->
+  <div class="tabs-wrapper">
+    <div id="tabs" class="tabs"></div>
   </div>
 
   <!-- アレルゲン選択 -->
@@ -64,23 +63,55 @@
   </div>
 
   <!-- その他 -->
-  <div class="card other-section">
+  <div class="card">
     <div class="section-title">その他・備考</div>
     <textarea id="other-input" rows="3" placeholder="例：大豆アレルギーあり。ごま油はOK。"></textarea>
   </div>
 
+  <!-- タイマー選択 -->
+  <div class="card" id="timer-section">
+    <div class="section-title">店員側の表示時間</div>
+    <div class="timer-options">
+      <button class="timer-option" data-minutes="10" onclick="selectTimer(10)">10分</button>
+      <button class="timer-option" data-minutes="15" onclick="selectTimer(15)">15分</button>
+      <button class="timer-option" data-minutes="20" onclick="selectTimer(20)">20分</button>
+    </div>
+  </div>
+
+  <!-- 高度な設定 -->
+  <div class="advanced-wrapper">
+    <button class="advanced-toggle" onclick="toggleAdvancedSettings()">
+      高度な設定 <span id="advanced-arrow">▼</span>
+    </button>
+    <div id="advanced-panel" class="advanced-panel">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label-text">消去しない（永続表示）</div>
+          <div class="toggle-desc">店員側の画面に情報が残り続けます</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="never-expire-toggle" onchange="toggleNeverExpire()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
   <p class="no-selection-msg" id="no-sel-msg">⚠️ アレルゲンを1つ以上選んでください</p>
-  <div class="spacer"></div>
 
-  <button class="btn-generate" onclick="generateQR()">QRコードを生成する</button>
+  <div class="action-buttons">
+    <button class="btn-reset" onclick="resetCurrentProfile()">リセット</button>
+    <button class="btn-generate" onclick="generateQR()">QRコードを生成する</button>
+  </div>
 
-  <!-- QR Modal -->
+  <!-- QRモーダル -->
   <div class="modal-overlay" id="modal" onclick="closeModal(event)">
     <div class="modal">
       <h2>QRコード</h2>
       <p class="modal-subtitle">店員さんに読み取ってもらってください</p>
       <div id="qr-container"></div>
       <div class="modal-tags" id="modal-tags"></div>
+      <div class="modal-timer" id="modal-timer"></div>
       <button class="btn-close" onclick="closeModal(null)">閉じる</button>
     </div>
   </div>
