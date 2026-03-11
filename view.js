@@ -82,6 +82,7 @@ if (scanId && (allergens.length || other)) {
   }
 }
 history.replaceState(null, '', location.pathname);
+
 // ==========================================
 // タイムスタンプ表示
 // ==========================================
