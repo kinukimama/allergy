@@ -527,3 +527,52 @@ textarea::placeholder { color: #bbb; }
 }
 
 .btn-close:hover { background: var(--border); }
+
+.share-buttons {
+  display: none;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.share-buttons.visible {
+  display: flex;
+}
+
+.btn-copy {
+  flex: 1;
+  padding: 12px;
+  background: var(--check-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-copy:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-line {
+  flex: 1;
+  padding: 12px;
+  background: #06C755;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-line:hover {
+  opacity: 0.85;
+}

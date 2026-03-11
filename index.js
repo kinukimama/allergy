@@ -350,7 +350,14 @@ function generateQR() {
   document.getElementById('modal-timer').textContent = destination === 'friend'
     ? '👥 消去なし（知人・幹事用）'
     : `⏱ ${selectedTimer}分後に自動消去`;
-
+  const shareButtons = document.getElementById('share-buttons');
+  const lineBtn = document.getElementById('btn-line');
+  if (destination === 'friend') {
+    shareButtons.classList.add('visible');
+    lineBtn.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(url);
+  } else {
+    shareButtons.classList.remove('visible');
+  }
   document.getElementById('modal').classList.add('open');
 }
 
@@ -359,5 +366,13 @@ function closeModal(e) {
     document.getElementById('modal').classList.remove('open');
   }
 }
-
+function copyURL() {
+  const lineBtn = document.getElementById('btn-line');
+  const url = decodeURIComponent(lineBtn.href.replace('https://line.me/R/msg/text/?', ''));
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = 'コピーしました！';
+    setTimeout(() => { btn.textContent = 'URLをコピー'; }, 2000);
+  });
+}
 
