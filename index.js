@@ -301,8 +301,6 @@ async function generateQR() {
   }
   document.getElementById('no-sel-msg').style.display = 'none';
 
-  const params = new URLSearchParams();
-
   const expiresAt = destination === 'friend'
     ? null
     : new Date(Date.now() + selectedTimer * 60 * 1000).toISOString();
