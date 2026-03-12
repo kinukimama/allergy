@@ -32,7 +32,7 @@ async function syncProfileToSupabase(profile) {
       'Content-Type': 'application/json',
       'apikey': SUPABASE_KEY,
       'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Prefer': 'resolution=merge-duplicates'
+      'Prefer': 'return=representation,resolution=merge-duplicates'
     },
     body: JSON.stringify({
       short_id: profile.id,
