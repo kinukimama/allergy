@@ -312,16 +312,16 @@ async function generateQR() {
     params.set('expires', (Date.now() + selectedTimer * 60 * 1000).toString());
     url = `${BASE_URL}?${params.toString()}`;
   } else {
-    const shortId = generateId();
-    await fetch(`${SUPABASE_URL}/rest/v1/scans`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/scans?on_conflict=short_id`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'resolution=merge-duplicates'
       },
       body: JSON.stringify({
-        short_id: shortId,
+        short_id: profile.id,
         data: JSON.stringify({
           name: profile.name,
           allergens: profile.allergens,
@@ -330,7 +330,7 @@ async function generateQR() {
         expires_at: null
       })
     });
-    url = `${BASE_URL}?id=${shortId}`;
+    url = `${BASE_URL}?id=${profile.id}`;
   }
 
   const container = document.getElementById('qr-container');
