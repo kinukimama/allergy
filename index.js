@@ -161,7 +161,7 @@ function addProfile() {
   setTimeout(() => startRename(newProfile.id), 50);
 }
 
-function deleteProfile(id) {
+async function deleteProfile(id) {
   if (!confirm('このプロフィールを削除しますか？')) return;
   profiles = profiles.filter(p => p.id !== id);
   saveProfiles(profiles);
@@ -169,6 +169,13 @@ function deleteProfile(id) {
     activeId = profiles[0].id;
     saveActiveId(activeId);
   }
+  await fetch(`${SUPABASE_URL}/rest/v1/scans?short_id=eq.${id}`, {
+    method: 'DELETE',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`
+    }
+  });
   renderTabs();
   renderProfile();
 }
