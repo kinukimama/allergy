@@ -358,6 +358,8 @@ function generateQR() {
   } else {
     shareButtons.classList.remove('visible');
   }
+  document.getElementById('allergen-list-text').classList.remove('open');
+  document.querySelector('.btn-list').textContent = '一覧を表示 ▼';
   document.getElementById('modal').classList.add('open');
 }
 
@@ -375,4 +377,25 @@ function copyURL() {
     setTimeout(() => { btn.textContent = 'URLをコピー'; }, 2000);
   });
 }
+function toggleList() {
+  const profile = getActiveProfile();
+  const listEl  = document.getElementById('allergen-list-text');
+  const btn     = document.querySelector('.btn-list');
+  const isOpen  = listEl.classList.toggle('open');
 
+  btn.textContent = isOpen ? '一覧を閉じる ▲' : '一覧を表示 ▼';
+
+  if (isOpen) {
+    const lines = [];
+    if (profile.allergens.length) {
+      lines.push('【アレルゲン】');
+      profile.allergens.forEach(a => lines.push('・' + a));
+    }
+    if (profile.other) {
+      lines.push('');
+      lines.push('【その他・備考】');
+      lines.push(profile.other);
+    }
+    listEl.textContent = lines.join('\n');
+  }
+}
