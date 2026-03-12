@@ -3,7 +3,8 @@
 // ==========================================
 
 const STORAGE_KEY_SCANS = 'allergyScans';
-
+const SUPABASE_URL = 'https://dswnnjcpnhqocknzhsfe.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd25uamNwbmhxb2Nrbnpoc2ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODYyNjIsImV4cCI6MjA4ODg2MjI2Mn0.ixlQd3T7QzXBxJifCHscyrjmo9Q_ArYpV46ZA4aG7_o';
 const ALLERGEN_META = {
   '卵':    { icon: '🥚', desc: 'Egg' },
   '乳':    { icon: '🥛', desc: 'Dairy / Milk' },
@@ -45,43 +46,49 @@ function saveScans(list) {
 // URLパラメータからスキャンデータを取得・保存
 // ==========================================
 
-const params    = new URLSearchParams(location.search);
-const scanId    = params.get('sid')   || '';
-const name      = params.get('name')  || '';
-const dataRaw   = params.get('data')  || '';
-const other     = params.get('other') ? decodeURIComponent(params.get('other')) : '';
-const expiresParam = params.get('expires') || '';
+(async () => {
+  const params  = new URLSearchParams(location.search);
+  const shortId = params.get('id') || '';
 
-const allergens = dataRaw ? dataRaw.split(',').filter(Boolean) : [];
-
-// URLにスキャンデータがある場合のみ保存処理を行う
-if (scanId && (allergens.length || other)) {
-  let scans = loadScans();
-
-  // 同じsidは重複して追加しない（リロード対策）
-  const alreadyExists = scans.find(s => s.id === scanId);
-
-  if (!alreadyExists) {
-    // 同じ名前の古いデータは上書き
-    scans = scans.filter(s => s.name !== name);
-
-    const expiresAt = expiresParam === 'never'
-      ? null
-      : (parseInt(expiresParam) || Date.now() + 15 * 60 * 1000);
-
-    scans.push({
-      id:        scanId,
-      name,
-      allergens,
-      other,
-      expiresAt,
-      scannedAt: Date.now()
+  if (shortId) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/scans?short_id=eq.${shortId}&select=*`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
     });
 
-    saveScans(scans);
+    const rows = await res.json();
+
+    if (rows.length) {
+      const row    = rows[0];
+      const parsed = JSON.parse(row.data);
+      let scans    = loadScans();
+
+      const alreadyExists = scans.find(s => s.id === shortId);
+
+      if (!alreadyExists) {
+        scans = scans.filter(s => s.name !== parsed.name);
+
+        const expiresAt = row.expires_at
+          ? new Date(row.expires_at).getTime()
+          : null;
+
+        scans.push({
+          id:        shortId,
+          name:      parsed.name,
+          allergens: parsed.allergens,
+          other:     parsed.other,
+          expiresAt,
+          scannedAt: Date.now()
+        });
+
+        saveScans(scans);
+      }
+    }
+    history.replaceState(null, '', location.pathname);
   }
-  history.replaceState(null, '', location.pathname);
-}
+})();
 
 
 // ==========================================

@@ -5,6 +5,8 @@
 const STORAGE_KEY_PROFILES = 'allergyProfiles';
 const STORAGE_KEY_ACTIVE   = 'allergyActiveProfile';
 const STORAGE_KEY_SETTINGS = 'allergySettings';
+const SUPABASE_URL = 'https://dswnnjcpnhqocknzhsfe.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd25uamNwbmhxb2Nrbnpoc2ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODYyNjIsImV4cCI6MjA4ODg2MjI2Mn0.ixlQd3T7QzXBxJifCHscyrjmo9Q_ArYpV46ZA4aG7_o';
 
 const BASE_URL = (() => {
   const u = location.href;
@@ -289,7 +291,7 @@ function selectTimer(minutes) {
 // QRコード生成
 // ==========================================
 
-function generateQR() {
+async function generateQR() {
   saveCurrentProfile();
   const profile = getActiveProfile();
 
@@ -305,13 +307,32 @@ function generateQR() {
   if (profile.allergens.length) params.set('data',  profile.allergens.join(','));
   if (profile.other)            params.set('other', encodeURIComponent(profile.other));
 
-  if (destination === 'friend') {
-    params.set('expires', 'never');
-  } else {
-    params.set('expires', (Date.now() + selectedTimer * 60 * 1000).toString());
-  }
+  const expiresAt = destination === 'friend'
+    ? null
+    : new Date(Date.now() + selectedTimer * 60 * 1000).toISOString();
 
-  const url = `${BASE_URL}?${params.toString()}`;
+  const shortId = generateId();
+  const payload = {
+    short_id: shortId,
+    data: JSON.stringify({
+      name: profile.name,
+      allergens: profile.allergens,
+      other: profile.other
+    }),
+    expires_at: expiresAt
+  };
+
+  await fetch(`${SUPABASE_URL}/rest/v1/scans`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const url = `${BASE_URL}?id=${shortId}`;
 
   const container = document.getElementById('qr-container');
   container.innerHTML = '';
