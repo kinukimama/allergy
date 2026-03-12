@@ -117,7 +117,7 @@ function render() {
         <div class="empty-icon">✓</div>
         <h2>アクティブなアレルギー情報はありません</h2>
         <p>QRコードをスキャンすると<br>ここに情報が表示されます</p>
-        ${hadScans ? '<button class="btn-close-tab" onclick="window.close()">この画面を閉じる</button>' : ''}
+        ${hadScans ? '<button class="btn-close-tab" onclick="window.close()">この画面を閉じる</button><p class="close-note">閉じられない場合はブラウザの戻るボタンをお使いください</p>' : ''}
       </div>`;
     return;
   }
