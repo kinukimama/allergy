@@ -576,3 +576,9 @@ textarea::placeholder { color: #bbb; }
 .btn-line:hover {
   opacity: 0.85;
 }
+.modal-privacy {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}

@@ -80,8 +80,9 @@ if (scanId && (allergens.length || other)) {
 
     saveScans(scans);
   }
+  history.replaceState(null, '', location.pathname);
 }
-history.replaceState(null, '', location.pathname);
+
 
 // ==========================================
 // タイムスタンプ表示
@@ -121,11 +122,14 @@ function render() {
 
   let html = `
     <div class="warning-banner">
-      <div class="warning-icon">⚠️</div>
+      <div class="warning-icon">🌿</div>
       <div class="warning-text">
-        <h2>アレルギーをお持ちのお客様がいます</h2>
-        <p>${scans.length}名分の情報が登録されています</p>
+        <h2>以下の食物にアレルギーがあります。</h2>
+        <p>ご配慮のほどお願い致します。</p>
       </div>
+    </div>
+    <div class="privacy-note">
+      📋 この画面はお客様が登録した情報を表示しているだけです。<br>お客様の端末情報・位置情報・個人情報は一切取得していません。
     </div>`;
 
   scans.forEach(scan => {
@@ -135,7 +139,7 @@ function render() {
     html += `
       <div class="person-card" id="card-${scan.id}">
         <div class="person-header">
-          <div class="person-name">👤 ${escHtml(scan.name)} 様</div>
+          <div class="person-name">👤 ${escHtml(scan.name)}</div>
           ${timerHtml}
         </div>
         <div class="allergen-list">`;
