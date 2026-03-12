@@ -302,10 +302,6 @@ async function generateQR() {
   document.getElementById('no-sel-msg').style.display = 'none';
 
   const params = new URLSearchParams();
-  params.set('sid',  generateId());
-  params.set('name', profile.name);
-  if (profile.allergens.length) params.set('data',  profile.allergens.join(','));
-  if (profile.other)            params.set('other', encodeURIComponent(profile.other));
 
   const expiresAt = destination === 'friend'
     ? null
