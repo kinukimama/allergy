@@ -196,7 +196,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 16px;
-  color: var(--text-muted);
+  color: var(--text);
   line-height: 1.6;
   white-space: pre-wrap;
 }
@@ -274,7 +274,11 @@ body {
   cursor: pointer;
   transition: opacity 0.15s;
 }
-
 .btn-close-tab:hover {
   opacity: 0.85;
+}
+.close-note {
+  font-size: 11px;
+  color: var(--text);
+  margin-top: 8px;
 }
