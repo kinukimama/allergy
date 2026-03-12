@@ -22,30 +22,6 @@ function generateId() {
 }
 
 // ==========================================
-// Supabaseプロフィール同期
-// ==========================================
-
-async function syncProfileToSupabase(profile) {
-  await fetch(`${SUPABASE_URL}/rest/v1/scans?on_conflict=short_id`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Prefer': 'return=representation,resolution=merge-duplicates'
-    },
-    body: JSON.stringify({
-      short_id: profile.id,
-      data: JSON.stringify({
-        name: profile.name,
-        allergens: profile.allergens,
-        other: profile.other
-      }),
-      expires_at: null
-    })
-  });
-}
-// ==========================================
 // データ読み書き
 // ==========================================
 
@@ -57,7 +33,6 @@ function loadProfiles() {
 
 function saveProfiles(list) {
   localStorage.setItem(STORAGE_KEY_PROFILES, JSON.stringify(list));
-  list.forEach(p => syncProfileToSupabase(p));
 }
 
 function loadActiveId(list) {
@@ -337,7 +312,25 @@ async function generateQR() {
     params.set('expires', (Date.now() + selectedTimer * 60 * 1000).toString());
     url = `${BASE_URL}?${params.toString()}`;
   } else {
-    url = `${BASE_URL}?id=${profile.id}`;
+    const shortId = generateId();
+    await fetch(`${SUPABASE_URL}/rest/v1/scans`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      },
+      body: JSON.stringify({
+        short_id: shortId,
+        data: JSON.stringify({
+          name: profile.name,
+          allergens: profile.allergens,
+          other: profile.other
+        }),
+        expires_at: null
+      })
+    });
+    url = `${BASE_URL}?id=${shortId}`;
   }
 
   const container = document.getElementById('qr-container');
