@@ -111,11 +111,13 @@ function render() {
   const content = document.getElementById('content');
 
   if (!scans.length) {
+    const hadScans = document.querySelectorAll('.person-card').length > 0;
     content.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">✓</div>
         <h2>アクティブなアレルギー情報はありません</h2>
         <p>QRコードをスキャンすると<br>ここに情報が表示されます</p>
+        ${hadScans ? '<button class="btn-close-tab" onclick="window.close()">この画面を閉じる</button>' : ''}
       </div>`;
     return;
   }

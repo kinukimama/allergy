@@ -247,6 +247,7 @@ body {
   margin-top: 12px;
   letter-spacing: 0.1em;
 }
+
 .privacy-note {
   font-size: 11px;
   color: var(--text-muted);
@@ -257,4 +258,23 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   margin-bottom: 16px;
+}
+
+/* View画面閉じるボタン */
+.btn-close-tab {
+  margin-top: 24px;
+  padding: 12px 28px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-close-tab:hover {
+  opacity: 0.85;
 }
