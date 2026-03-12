@@ -5,6 +5,7 @@
 const STORAGE_KEY_SCANS = 'allergyScans';
 const SUPABASE_URL = 'https://dswnnjcpnhqocknzhsfe.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd25uamNwbmhxb2Nrbnpoc2ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODYyNjIsImV4cCI6MjA4ODg2MjI2Mn0.ixlQd3T7QzXBxJifCHscyrjmo9Q_ArYpV46ZA4aG7_o';
+
 const ALLERGEN_META = {
   '卵':    { icon: '🥚', desc: 'Egg' },
   '乳':    { icon: '🥛', desc: 'Dairy / Milk' },
