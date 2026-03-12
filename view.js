@@ -269,5 +269,6 @@ window.addEventListener('storage', e => {
 // 起動
 // ==========================================
 
-render();
+const urlParams = new URLSearchParams(location.search);
+if (!urlParams.get('id') && !urlParams.get('sid')) render();
 setInterval(updateTimers, 1000);

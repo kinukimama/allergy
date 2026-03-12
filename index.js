@@ -387,6 +387,9 @@ async function generateQR() {
   }
   document.getElementById('allergen-list-text').classList.remove('open');
   document.querySelector('.btn-list').textContent = '一覧を表示 ▼';
+  document.querySelector('.modal-subtitle').textContent = destination === 'friend'
+    ? 'URLをコピーして知人に送ってください'
+    : '店員さんに読み取ってもらってください';
   document.getElementById('modal').classList.add('open');
 }
 
