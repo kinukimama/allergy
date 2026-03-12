@@ -583,6 +583,9 @@ textarea::placeholder { color: #bbb; }
   line-height: 1.6;
 }
 
+.list-button-wrapper {
+  margin-bottom: 10px;
+}
 .btn-list {
   width: 100%;
   padding: 12px;
