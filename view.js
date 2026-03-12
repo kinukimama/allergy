@@ -49,7 +49,8 @@ function saveScans(list) {
 
 (async () => {
   const params  = new URLSearchParams(location.search);
-  const shortId = params.get('id') || '';
+  const shortId = params.get('id')  || '';
+  const scanId  = params.get('sid') || '';
 
   if (shortId) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/scans?short_id=eq.${shortId}&select=*`, {
@@ -71,15 +72,41 @@ function saveScans(list) {
       if (!alreadyExists) {
         scans = scans.filter(s => s.name !== parsed.name);
 
-        const expiresAt = row.expires_at
-          ? new Date(row.expires_at).getTime()
-          : null;
-
         scans.push({
           id:        shortId,
           name:      parsed.name,
           allergens: parsed.allergens,
           other:     parsed.other,
+          expiresAt: null,
+          scannedAt: Date.now()
+        });
+
+        saveScans(scans);
+      }
+    }
+    render();
+    history.replaceState(null, '', location.pathname);
+
+  } else if (scanId) {
+    const name       = params.get('name') || '';
+    const dataRaw    = params.get('data') || '';
+    const other      = params.get('other') ? decodeURIComponent(params.get('other')) : '';
+    const expiresParam = params.get('expires') || '';
+    const allergens  = dataRaw ? dataRaw.split(',').filter(Boolean) : [];
+
+    if (allergens.length || other) {
+      let scans = loadScans();
+      const alreadyExists = scans.find(s => s.id === scanId);
+
+      if (!alreadyExists) {
+        scans = scans.filter(s => s.name !== name);
+        const expiresAt = parseInt(expiresParam) || Date.now() + 15 * 60 * 1000;
+
+        scans.push({
+          id:        scanId,
+          name,
+          allergens,
+          other,
           expiresAt,
           scannedAt: Date.now()
         });

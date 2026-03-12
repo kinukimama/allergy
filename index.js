@@ -301,32 +301,38 @@ async function generateQR() {
   }
   document.getElementById('no-sel-msg').style.display = 'none';
 
-  const expiresAt = destination === 'friend'
-    ? null
-    : new Date(Date.now() + selectedTimer * 60 * 1000).toISOString();
+  let url;
 
-  const shortId = generateId();
-  const payload = {
-    short_id: shortId,
-    data: JSON.stringify({
-      name: profile.name,
-      allergens: profile.allergens,
-      other: profile.other
-    }),
-    expires_at: expiresAt
-  };
-
-  await fetch(`${SUPABASE_URL}/rest/v1/scans`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const url = `${BASE_URL}?id=${shortId}`;
+  if (destination === 'restaurant') {
+    const params = new URLSearchParams();
+    params.set('sid',  generateId());
+    params.set('name', profile.name);
+    if (profile.allergens.length) params.set('data', profile.allergens.join(','));
+    if (profile.other) params.set('other', encodeURIComponent(profile.other));
+    params.set('expires', (Date.now() + selectedTimer * 60 * 1000).toString());
+    url = `${BASE_URL}?${params.toString()}`;
+  } else {
+    const shortId = generateId();
+    const payload = {
+      short_id: shortId,
+      data: JSON.stringify({
+        name: profile.name,
+        allergens: profile.allergens,
+        other: profile.other
+      }),
+      expires_at: null
+    };
+    await fetch(`${SUPABASE_URL}/rest/v1/scans`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      },
+      body: JSON.stringify(payload)
+    });
+    url = `${BASE_URL}?id=${shortId}`;
+  }
 
   const container = document.getElementById('qr-container');
   container.innerHTML = '';
