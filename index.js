@@ -26,7 +26,7 @@ function generateId() {
 // ==========================================
 
 async function syncProfileToSupabase(profile) {
-  await fetch(`${SUPABASE_URL}/rest/v1/scans`, {
+  await fetch(`${SUPABASE_URL}/rest/v1/scans?on_conflict=short_id`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
