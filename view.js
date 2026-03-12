@@ -87,6 +87,7 @@ function saveScans(list) {
         saveScans(scans);
       }
     }
+    render();
     history.replaceState(null, '', location.pathname);
   }
 })();
